@@ -7,42 +7,71 @@
 </head>
 <body>
   <h1>My App</h1>
-  <div id="messages"></div>
-  <br/>
-  <form onsubmit="return addMessage(this)">
-    <input type="text" id="username" placeholder="Tu Nombre" >
-    <input type="text" id="texto" placeholder="Cuéntanos algo...">
-    <input type="submit" value="Enviar!">
+  <form onsubmit="return build(this)">
+    <input type="text" id="appId" disabled readonly>
+    <input type="text" id="appName" placeholder="app name" >
+    <input type="text" id="bundleId" placeholder="bundle package">
+    <input type="submit" value="build">
   </form>
-
+  <div id="messages"></div>
+  <br />
+  <a hidden id="dwnbtn">download</button>
   <script>
-  var socket = io.connect('http://localhost:3000', { 'forceNew': true });
+    const id = genId()
+    const inputId = document.getElementById('appId')
+    inputId.value = id
+  const socket = io.connect('http://localhost', { 'forceNew': true });
 
-socket.on('messages', function(data) {
-  console.log(data);
-  render(data);
-})
+  socket.on('messages', function(data) {
+    document.title = data[data.length - 1].porcent + "%"
+    render(data);
+  })
+
+  socket.on('download', function(bundle) {
+    showDownload(bundle)
+  })
 
 function render (data) {
   var html = data.map(function(elem, index) {
     return(`<div>
-              <strong>${elem.author}</strong>:
-              <em>${elem.text}</em>
+              <em>${elem.porcent}% ${elem.label}...</em>
             </div>`);
   }).join(" ");
 
   document.getElementById('messages').innerHTML = html;
 }
 
-function addMessage(e) {
-  var message = {
-    author: document.getElementById('username').value,
-    text: document.getElementById('texto').value
+function showDownload (bundle) {
+  const downloadButton = document.getElementById('dwnbtn')
+  downloadButton.removeAttribute("hidden")
+	appId = document.getElementById('appId').value,
+  appName = document.getElementById('appName').value,
+  downloadButton.href = `http://localhost/build/download?id=${appId}&name=${appName}`
+}
+
+function build(e) {
+	const payload = {
+    id: document.getElementById('appId').value,
+    name: document.getElementById('appName').value,
+    bundle: document.getElementById('bundleId').value
   };
 
-  socket.emit('new-message', message);
+  fetch('http://localhost/build', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
   return false;
 }
+
+  function genId () {
+    return Math.random().toString(36).substr(2, 9);
+  };
+
   </script>
 </body>
 </html>

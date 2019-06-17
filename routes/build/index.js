@@ -4,9 +4,11 @@ module.exports = {
   '/': {
     'POST': [
       controllers.builder.buildFile
-    ],
+    ]
+  },
+  '/download': {
     'GET': [
-      controllers.builder.get.buildFile
+      controllers.builder.download
     ]
   }
 }

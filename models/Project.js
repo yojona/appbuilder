@@ -53,7 +53,7 @@ class Project {
     try {
       const dir = `${this.path}/${this.id}`
       const buildPath = `platforms/android/app/build/outputs/apk`
-      await run(dir, `zip -r ${this.name}.zip ${buildPath}`)
+      await run(dir, `zip -r bundle.zip ${buildPath}`)
       this.setProgress(100, 'done')
     } catch (e) {
       this.error(e)

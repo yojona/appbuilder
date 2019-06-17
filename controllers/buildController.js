@@ -4,24 +4,26 @@ const log = require('../lib/log')
 const PROJECT_PATH = 'projects'
 
 module.exports = {
-  buildFile: (req, res) => {
-    console.log(req.files)
-    res.json({msg: 'hola'})
-  },
-  get: {
-    buildFile: async (req, res) => {
-      const name = req.query.name
-      const bundle = req.query.bundle
-      
-      const project = new Project('2019', name, bundle, PROJECT_PATH)
+  buildFile: async (req, res) => {
+    const io = req.app.get('socketio')
+    const id = req.body.id
+    const name = req.body.name
+    const bundle = req.body.bundle
 
-      try {
-        ProjectManager.build(project)
-      } catch (e) {
-        project.error(e)
-      }
+    const project = new Project(id, name, bundle, PROJECT_PATH)
 
-      res.json({success: false})
+    try {
+      ProjectManager.setEmitter(io)
+      ProjectManager.build(project)
+    } catch (e) {
+      project.error(e)
     }
+
+    res.json({success: true})
+  },
+  download: (req, res) => {
+    const id = req.query.id
+    const name = req.query.name
+    res.download(`${PROJECT_PATH}/${id}/bundle.zip`, `${name}.zip`)
   }
 }

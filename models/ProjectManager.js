@@ -1,5 +1,10 @@
+let io = null
+let status = [];
+
 class ProjectManager {
   static async build (project) {
+    this.reset()
+
     await project.init()
     this.emit(project)
 
@@ -14,15 +19,37 @@ class ProjectManager {
 
     await project.prepare()
     this.emit(project)
+
+    this.result(project)
   }
 
   static retrieve (project) {
     project.retrieve()
   }
 
+  static reset () {
+    status = []
+  }
+  static setEmitter (socket) {
+    io = io || socket
+  }
+
   static emit(p) {
-    const label = `${p.getProgress().porcent}% ${p.getProgress().label}...`
-    console.log(label)
+    console.log(p.getProgress())
+    status.push(p.getProgress())
+    io.sockets.emit('messages', status);
+
+    io.on('connection', function (a) {
+      io.sockets.emit('messages', status);
+    })
+  }
+
+  static result(p) {
+    const data = {
+      id: p.id,
+      name: p.name
+    }
+    io.sockets.emit('download', data);
   }
 }
 
