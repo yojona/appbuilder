@@ -52,8 +52,9 @@ class Project {
   async prepare () {
     try {
       const dir = `${this.path}/${this.id}`
-      const buildPath = `platforms/android/app/build/outputs/apk`
-      await run(dir, `zip -r bundle.zip ${buildPath}`)
+      const buildPath = `${dir}/platforms/android/app/build/outputs/apk`
+      await run(buildPath, `zip -r bundle.zip .`)
+      await run(buildPath, `mv -f bundle.zip ${process.cwd()}/${dir}`)
       this.setProgress(100, 'done')
     } catch (e) {
       this.error(e)
